@@ -1,19 +1,18 @@
-# Bring in apk tooling (workaround for images that may not include it)
+# Stage 0: provide apk tooling + libs (workaround when base image lacks apk)
 FROM alpine:3.22 AS alpine
-# (Nothing else needed; we just copy apk + libapk)
 
+# Stage 1: your custom runner
 FROM n8nio/runners:latest
 
 USER root
 
-# Ensure apk exists (safe even if it already exists in the base image)
+# If the base image doesn't have apk, copy it in (safe even if it already exists)
 COPY --from=alpine /sbin/apk /sbin/apk
 COPY --from=alpine /usr/lib/libapk.so* /usr/lib/
 
-# Install robust SVG rasterization + basic fonts
-# - rsvg-convert comes from librsvg-utils
-# - fonts help when SVGs reference common font families
-RUN apk add --no-cache \
+# Install robust SVG rasterizer + basic fonts
+# rsvg-convert is in librsvg-utils
+RUN /sbin/apk add --no-cache \
   librsvg \
   librsvg-utils \
   cairo \
